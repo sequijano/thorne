@@ -5,6 +5,8 @@
  */
 package com.thorne.dto;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author squijano
@@ -15,6 +17,7 @@ public class PersonTO {
     private String lastName;
     private String document;
     private String documentNew;
+    private ArrayList<CardTO> listaTarjetas;
     
     private String token;
     
@@ -81,7 +84,14 @@ public class PersonTO {
     public void setToken(String token) {
         this.token = token;
     }
-        
-    
+
+    public ArrayList<CardTO> getListaTarjetas() {
+        return listaTarjetas;
+    }
+
+    public void setListaTarjetas(ArrayList<CardTO> listaTarjetas) {
+        this.listaTarjetas = listaTarjetas;
+    }
+           
     
 }

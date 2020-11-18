@@ -9,9 +9,11 @@ import com.thorne.dto.PersonTO;
 import com.mysql.jdbc.Connection;
 import com.mysql.jdbc.PreparedStatement;
 import com.mysql.jdbc.Statement;
+import com.thorne.dto.CardTO;
 import com.thorne.dto.UserTO;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 //import org.apache.log4j.Logger;
 
 /**
@@ -75,6 +77,7 @@ public class PersonDAO {
             rs = stat.executeQuery(query);
             
             if(rs.next()){
+               person.setId(rs.getString("id"));
                person.setName(rs.getString("nombre"));
                person.setLastName(rs.getString("apellido"));
             }
@@ -91,6 +94,42 @@ public class PersonDAO {
         return person;
     }
 
+    private PersonTO queryTarjetas(Connection conn, PersonTO person, String query) {
+
+        ResultSet rs = null;
+        
+        //PreparedStatement stmt = null;
+        try {
+            Statement stat = (Statement) conn.createStatement();
+            
+            //stmt = (PreparedStatement) conn.prepareStatement(query);
+            rs = stat.executeQuery(query);
+        
+            ArrayList<CardTO> listaTarjetas = new ArrayList<>();
+            while(rs.next()){
+               CardTO tarj = new CardTO();
+               tarj.setNumber(rs.getString("nroTarjeta"));
+               tarj.setDateExp(rs.getString("fecExp"));
+               tarj.setNameOnCard(rs.getString("nombreEnTarjeta"));
+               tarj.setEstatus(rs.getString("estatus"));
+               listaTarjetas.add(tarj);
+            }
+            person.setListaTarjetas(listaTarjetas);
+            
+            
+            
+            stat.close();
+            //conn.close();
+        } catch (SQLException sqle) {
+            person.setName(sqle.toString());
+            System.out.println("Error en la ejecución:"
+                    + sqle.getErrorCode() + " " + sqle.getMessage());
+        }
+
+        return person;
+    }
+
+    
     public String insertarPersona(Connection conn, PersonTO person) {
 
         String query = "INSERT INTO Person(documento,nombre,apellido) "
@@ -100,9 +139,13 @@ public class PersonDAO {
     }
 
     public PersonTO consultarPersona(Connection conn, String id) {
-        String query = "SELECT nombre, apellido from person where documento = '" + id + "'";
+        String query = "SELECT id, nombre, apellido from person where documento = '" + id + "'";
 
-        return queryPersona(conn, query);        
+        PersonTO persona = queryPersona(conn, query);
+                
+        query = "SELECT nroTarjeta, fecExp, nombreEnTarjeta, estatus from card where fk_persona = '" + persona.getId() + "'";
+        
+        return queryTarjetas(conn, persona, query);        
     }
 
     public String modificarPersona(Connection conn, PersonTO person) {
